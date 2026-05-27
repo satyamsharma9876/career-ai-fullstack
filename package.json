@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@google/genai": "^2.6.0",
+    "react-router-hash-link": "^2.4.3"
+  }
+}

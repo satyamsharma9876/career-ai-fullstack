@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src", // sara TypeScript src folder me h, isme hm apna code lekhenge
+    "outDir": "./dist",//JS bankar dist folder me jayega, production vala code yha hoga
+
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+    "module": "nodenext",//ES module support nmilta h import/export ache se milta h, modern projects use it
+    "moduleResolution": "nodenext",//typeScript ko batata h import kaise khojne h
+    "target": "ES2020",
+    // For nodejs:
+    "lib": ["ES2020"],//isse promise, async await optional chaining.etc allowed hote h
+    "types": ["node"],
+    // and npm install -D @types/node
+
+    // Other Outputs
+    "sourceMap": false,//build halka or fast hota h
+    "declaration": false,
+    "declarationMap": false,
+
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+
+    "resolveJsonModule": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+  }
+}
