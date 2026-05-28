@@ -27,7 +27,7 @@ const AnalysePage = () => {
      setResult(null)
      try {
         const pdfBase64 = await toBase64(file) 
-        const { data } = await axios.post(`${server}/api/ai/analyse`, 
+        const { data } = await axios.post(`${server}/api/ai/analyse`, //It is backend api end point
           { pdfBase64 }, {
           headers:{Authorization: `Bearer ${localStorage.getItem("token")}`},
         });
@@ -40,19 +40,21 @@ const AnalysePage = () => {
      }
 
     }
-
-    const onDrop = (error: React.DragEvent) => {
-      error.preventDefault();
-      const f = error.dataTransfer.files[0];
+     
+    //React.DragEvent:TypeScript को बता रहे हो कि: "ये drag-drop वाला event object होगा"
+    const onDrop = (error: React.DragEvent) => {//error:it is not error,it can be e also
+      error.preventDefault();//Browser का default behavior रोक रहे हो।
+      const f = error.dataTransfer.files[0];//error.dataTransfer:drag/drop से related data रखता है। .files:drop की गई files की list देता है। [0]:पहली file निकाल रहा है।
       if(f) handleFile(f);
-
     };
+    
   return (
     <div className="bg-page min-h-screen pt-20 px-4 md:px-8 pb-12">
       <div className="max-w-3xl mx-auto flex flex-col gap-4">
         <div
-        onDrop={onDrop}
-        onDragOver={(e)=> e.preventDefault()}
+        onDrop={onDrop}//jb user file drag krke is div pr chodta h (drop krta h) to onDrop fn chelga
+        onDragOver={(e)=> e.preventDefault()}//Normally browser drag-drop allow नहीं करता ye iska def behaviour h,अगर preventDefault() नहीं लगाओगे तो drop event काम नहीं करेगा।
+        onClick={() => fileRef.current?.click()}//जब user div पर click करेगा → hidden input automatically click हो जाएगा।
         className="glass-card border-dashed border-white/15 flex flex-col 
         items-center justify-center gap-3 py-10 cursor-pointer hover:border-indigo-500/40
         hover:bg-white/2 transition-all duration-300 group"
@@ -75,13 +77,17 @@ const AnalysePage = () => {
               <p className="text-red-400 text-sm flex items-center gap-1.5">
                 <AlertCircle size={14} /> {error}
               </p>
-            )}
+          )}
 
-           <input type="file" ref={fileRef} accept=".pdf" className="hidden" onChange=
-           {(e)=>{
-            const f = e.target.files?.[0];
+           <input 
+           type="file" //ये file upload input है।
+           ref={fileRef} //इस input को fileRef से connect कर दिया, ab fileRef.current से इस input को access कर सकते हो
+           accept=".pdf" //सिर्फ PDF files allow होंगी।
+           className="hidden" //i/p screen pe nhi dikai dega b/c actual UI div se bana rhe h but asli file picker thi hidden i/p h
+           onChange={(e)=>{
+            const f = e.target.files?.[0];//e.target.files: selected files की list,
             if(f) handleFile(f)
-              e.target.value = "";
+              e.target.value = "";//अगर user same file दोबारा upload करे तो normally onChange trigger नहीं होता so yha input reset rhe h
            }}     
            /> 
 
@@ -189,7 +195,6 @@ const AnalysePage = () => {
             )} 
         </div>
       </div>
-      AnalysePage
     </div>
   )
 }

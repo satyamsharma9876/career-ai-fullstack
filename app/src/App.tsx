@@ -9,6 +9,7 @@ import Loading from "./components/loading"
 import PublicRoutes from "./components/PublicRoutes"
 import ProtectedRoutes from "./components/ProtectedRoutes"
 import AnalysePage from "./pages/Analyse"
+import JobMatcherPage from "./pages/JobMatcher"
 
 const App = () => {
   const {loading} = useAppData()
@@ -27,7 +28,8 @@ const App = () => {
        
        <Route element={<ProtectedRoutes/>} > {/*agr na lagao to user kbhi bhi koi bhi direct URL likh ke protected page open kar sakta hai eg localhost:5173/account*/}
          <Route path="/account" element={<Account />} />
-         <Route path="/analyse" element={<AnalysePage />} />   
+         <Route path="/analyse" element={<AnalysePage />} /> 
+           <Route path="/jobmatcher" element={<JobMatcherPage/>} />
        </Route>
 
      </Routes>

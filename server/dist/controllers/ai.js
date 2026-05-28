@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import TryCatch from '../middlewares/trycatch.js';
 import User from '../models/User.js';
 import { ResumeAnalyserPrompt } from '../config/prompt.js'; //importing prompt jo AI ko instruction dega
+import { JobMatcherPrompt } from '../config/prompt.js';
 dotenv.config(); //.env file को activate/load करता है।
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY_GEMNI }); //Gemini AI client/object बना रहा है,API key देकर authenticate कर रहा है।
 // ! ka mtlb hm typescript ko bta rhe h ki "TypeScript trust me, value undefined नहीं होगी"
@@ -38,7 +39,7 @@ export const analyseResume = TryCatch(async (req, res) => {
             },
         ],
     });
-    const rawText = response.text?.replace(/```json|```/g, "").trim(); //
+    const rawText = response.text?.replace(/```json|```/g, "").trim();
     //AI कभी response ऐसे देता है: to ye line use yese bna deta h 
     //     ```json                            {
     //     {                                     "score": 90
@@ -63,6 +64,59 @@ export const analyseResume = TryCatch(async (req, res) => {
     if (!user.hasProAcess()) {
         user.freeRequestsUsed += 1;
         await user.save(); //database में updated value save
+    }
+    res.json(jsonResponse);
+});
+export const jobMatcher = TryCatch(async (req, res) => {
+    const { mode, skills, experience, pdfBase64 } = req.body;
+    if (!mode)
+        return res.status(400).json({ message: "Mode is Reuired" });
+    if (mode === "manual" && (!skills?.length || !experience?.trim()))
+        return res.status(400).json({
+            message: "Skills and experience are required"
+        });
+    if (mode === "resume" && !pdfBase64)
+        return res.status(400).json({
+            message: "pdfBase64 are required",
+        });
+    const user = await User.findById(req.user?._id);
+    if (!user || !user.canMakeRequest()) {
+        return res.status(403).json({
+            message: "Upgrade Your plan to continue",
+        });
+    }
+    const parts = [{ text: JobMatcherPrompt(mode, skills, experience) }];
+    if (mode === "resume") {
+        parts.push({
+            inlineData: {
+                mimeType: "applicaation/pdf",
+                data: pdfBase64.replace(/^data:application\/pdf;base64,/, ""),
+            }
+        });
+    }
+    const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [{ role: "user", parts }],
+    });
+    const rawText = response.text?.replace(/```json|```/g, "").trim();
+    if (!rawText) {
+        return res.status(500).json({
+            message: "Ai returned empty response",
+        });
+    }
+    let jsonResponse;
+    try {
+        jsonResponse = JSON.parse(rawText);
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Ai returned invalid Json",
+            rawResponse: response.text,
+        });
+    }
+    if (!user.hasProAcess()) {
+        user.freeRequestsUsed += 1;
+        await user.save();
     }
     res.json(jsonResponse);
 });
