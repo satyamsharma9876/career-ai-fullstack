@@ -1,8 +1,7 @@
-node_modules
+
 app/node_modules
 server/node_modules
 server/.env
-.env
 
 dist
 build
