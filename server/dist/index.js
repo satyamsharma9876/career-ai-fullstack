@@ -7,7 +7,7 @@ import aiRoutes from "./routes/ai.js";
 import Razorpay from "razorpay";
 import paymentRoutes from "./routes/payment.js";
 import axios from "axios";
-const url = `https://render-hosting-se2b.onrender.com`;
+const url = `https://career-ai-fullstack-9xtf.onrender.com`;
 const interval = 30000;
 function reloadWebsite() {
     axios

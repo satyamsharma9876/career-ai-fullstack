@@ -13,7 +13,7 @@
     "lib": ["ES2020"],//isse promise, async await optional chaining.etc allowed hote h
     "types": ["node"],
     // and npm install -D @types/node
-
+     
     // Other Outputs
     "sourceMap": false,//build halka or fast hota h
     "declaration": false,
@@ -26,5 +26,6 @@
     "resolveJsonModule": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
+    
   }
 }
