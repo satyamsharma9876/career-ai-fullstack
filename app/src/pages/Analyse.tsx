@@ -13,9 +13,10 @@ const AnalysePage = () => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("");
 
-    const fileRef =useRef<HTMLInputElement>(null)
-
-    async function handleFile(file: File){
+    const fileRef =useRef<HTMLInputElement>(null)//useRef किसी DOM element को direct access करने के लिए use होता है, HTMLInputElement: यह ref एक HTML input element को point करेगा।
+    //why null:Initially i/p मौजूद नहीं होता render होने से पहले isiliye null dia Initially input मौजूद नहीं होता render होने से पहले, and input me fileRef.current us i/p ko rep krega
+    // and fileRef.current?.click(): file input को programmatically click कर दो।
+    async function handleFile(file: File){//this fn handling browser's uploaded file
       if(file.type !== "application/pdf")
         return setError("Please upload a pdf file.");
      
@@ -25,20 +26,33 @@ const AnalysePage = () => {
      setError("")
      setLoading(true)
      setResult(null)
-     try {
-        const pdfBase64 = await toBase64(file) 
-        const { data } = await axios.post(`${server}/api/ai/analyse`, //It is backend api end point
+//       axios.post( kaha bhejna h , kya bhejna h, extra settings )
+//       axios.post(url, payload, config)  
+//       axios.get(url, config)//isme body nhi hoti
+//       axios.put(url, payload, config)//पूरी object replace/update.
+//       axios.patch(url, payload, config)// for small updates
+//       axios.delete(url, config)// delete me usually body nhi bhejte
+
+     try {// what is base64: Binary file को text format में convert करना।
+        const pdfBase64 = await toBase64(file) //JSON में direct file नहीं भेज सकते easily
+        const { data } = await axios.post(`${server}/api/ai/analyse`, //It is backend api end point or Backend API call, req bhej rhe ho b ko
+          //axios hme response bhjeta h or us res me se hm data destructure kr lete h
+          //const response = {
+          //    data: ...,    // backend response
+          //    status: 200,
+          //    headers: ...,
+          //    config: ...,
+          // }
           { pdfBase64 }, {
-          headers:{Authorization: `Bearer ${localStorage.getItem("token")}`},
+          headers:{Authorization: `Bearer ${localStorage.getItem("token")}`},//JWT token भेज रहे हो authentication के लिए।
         });
 
         setResult(data);
-     } catch (error: any) {
+      } catch (error: any) {
         setError(error?.response?.data?.message || "Analysis Failed. Please try again")
      }finally{
       setLoading(false);
      }
-
     }
      
     //React.DragEvent:TypeScript को बता रहे हो कि: "ये drag-drop वाला event object होगा"
@@ -83,7 +97,7 @@ const AnalysePage = () => {
            type="file" //ये file upload input है।
            ref={fileRef} //इस input को fileRef से connect कर दिया, ab fileRef.current से इस input को access कर सकते हो
            accept=".pdf" //सिर्फ PDF files allow होंगी।
-           className="hidden" //i/p screen pe nhi dikai dega b/c actual UI div se bana rhe h but asli file picker thi hidden i/p h
+           className="hidden" //i/p screen pe nhi dikai dega b/c actual UI div se bana rhe h but asli file picker hidden i/p h
            onChange={(e)=>{
             const f = e.target.files?.[0];//e.target.files: selected files की list,
             if(f) handleFile(f)

@@ -1,10 +1,10 @@
 
 import { useState, useRef } from "react";
 import type { Job } from "../types";
-import { toBase64 }from "../utils"
+import { matchBg, toBase64, matchColor }from "../utils"
 import axios from "axios";
 import {server} from "../main"
-import { Briefcase, Divide, Plus, X } from "lucide-react";
+import { Briefcase, ChevronRight, Divide, FileText, Plus, X } from "lucide-react";
 import { Upload } from "lucide-react";
 import { AlertCircle, Loader2 } from "lucide-react";
 
@@ -37,12 +37,13 @@ const JobMatcherPage = () => {
       if(file.type !== "application/pdf")
         return setError("Please upload a pdf file.");
      
-     if(file.size > 5 *1024 * 1024)
+      if(file.size > 5 *1024 * 1024)
       return setError("File size should be less than 5MB.")
 
      setError("");
      setFile(file);
      }
+
      async function handleSubmit(){
         setError("");
         setResult(null);
@@ -53,16 +54,17 @@ const JobMatcherPage = () => {
         if(mode ==="resume" && !file){
             return setError("Please upload your resume pdf.");
         }
-
+        
         setLoading(true);
+        
         try {
             let payload: any = {mode};
             if(mode==="manual"){
-                payload = {...payload, skills, experience}
+                payload = {...payload, skills, experience};
             }else{
                 payload = {...payload, pdfBase64: await toBase64(file!)//! means Non-null assertion operator
-            }   
-
+              }   
+            }
             const {data} = await axios.post(`${server}/api/ai/job-Matcher`,payload,
                 {
                     headers: {
@@ -71,15 +73,14 @@ const JobMatcherPage = () => {
                 });
 
                 setResult(data);
-        } 
-        }catch (error: any) {   
+          }   
+         catch (error: any) {   
             setError( error?.response?.data?.message || "failed to fetch job matches" );      
         }
        finally{
         setLoading(false);
 
      }
-
  }
 
    return (
@@ -142,10 +143,10 @@ const JobMatcherPage = () => {
                     <label className="text-xs text-white/30 uppercase tracking-widest">
                     Experience & Background
                     </label>
-                    <textarea
-                    value={experience}
-                    onChange={(e)=> setExp(e.target.value)}
-                    rows={4}
+                    <textarea 
+                    value={experience}// textarea:User से multi-line text input लेने के लिए, value={experience}: Textarea की current value कौन control कर रहा है?
+                    onChange={(e)=> setExp(e.target.value)}//जब user typing करेगा तब ये चलेगा।
+                    rows={4}//Textarea की height लगभग 4 text lines जितनी रखो।
                     placeholder="e.g. 2 year of frontend development, worked on e-commerce projects, familier with agile teams..."
                     className="bg-white/5  rounded-xl px-4 py-5
                     text-sm text-white placeholder-white/25 outline-none
@@ -172,11 +173,17 @@ const JobMatcherPage = () => {
               className="w-14 h-14 rounded-2xl bg-indigo-500/10 border-dashed 
              border-indigo-500/20 flex items-center justify-center 
               group-hover:scale-105 transition-transform ">
-              <Upload size={32} className="text-indigo-400"/>
+
+            {file ? (
+                <FileText size={22} className="text-emerald-400"/>
+                ) : (
+                < Upload size={32} className=" text-indigo-400" />
+            ) }
+              
             </div>
             <div className="text-center">
               <p className="font-semibold text-white/80">
-              {result ? "Analyse another Resume" : "Drop your resume here"}
+              {file ? file.name : "Drop your resume here"}
               </p>
               <p className="text-white/35 text-sm mt-0.5">
               or click to browse • PDF only • max 5MB</p>
@@ -216,6 +223,67 @@ const JobMatcherPage = () => {
          <Loader2 size={36} className="text-indigo-400 animate-spin"/>
          <p className="text-white/40 text-sm">Find your best job matches...</p>
         </div>
+        )}
+
+        {result && !loading && (
+            <div className="flex flex-col gap-4">
+                <div className="glass-card p-5">
+                    <p className="text-sm text-white/30 uppercase tracking-widest mb-2">
+                    Summary
+                    </p>
+                    <p className="text-sm text-white/60 leading-relaxed">
+                    {result.summary}
+                    </p>
+                </div>
+
+                {result.jobs.map((job, i)=>(
+                    <div 
+                    key={i} 
+                    className={`glass-card p-6 flex flex-col gap-4 border ${matchBg(
+                        job.matchScore
+                    )}`}>
+                        <div className="flex items-start justify-between gap-3 flex-wrap ">
+                            <div>
+                                <h3 className="font-bold text-whie">{job.title}</h3>
+                                <p className="text-white/45 text-sm mt-0.5">
+                                {job.company} • {job.location} • {job.type}
+                                </p>
+                            </div>
+
+                            <span className={`text-2xl font-black shrink-0 ${matchColor(
+                                job.matchScore
+                            )}`}>
+                                {job.matchScore}%
+                            </span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            {job.skills.map((s)=>(
+                                <span key={s} className="feature-pill">
+                                    {s}
+                                </span>
+                            ))}
+                        </div>
+
+                        <div className="divider-subtle"/>
+
+                        <div className="flex flex-col gap-2">
+                            <p className="text-xs text-white/30 uppercase tracking-widest">
+                            Why you match 
+                            </p>
+                            <p className="text-sm text-white/55 leading-relaxed">
+                            {job.whyMatch}
+                            </p>
+                        </div>
+
+                        <div className="flex items-start gap-2 text-sm text-white/60 bg-white/4 
+                        rounded-xl p-3" >
+                            <ChevronRight size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+                            {job.applyTip}
+                        </div>
+                    </div>
+                ))}
+            </div>
         )}
        </div>
      </div>

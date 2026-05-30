@@ -34,6 +34,7 @@ export interface Question {
   hint: string;
   category: string;
 }
+
 export interface InterviewData {
   role: string;
   round: string;

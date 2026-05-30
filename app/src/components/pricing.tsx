@@ -3,6 +3,15 @@ import {plans} from "../utils"
 import { useNavigate} from "react-router-dom";
 import { useState } from "react";
 import { CheckCircle, Shield } from "lucide-react"; 
+import axios from "axios";
+import { server } from "../main";
+import toast from "react-hot-toast";
+
+declare global{
+    interface Window{
+        Razorpay: any;
+    }
+}
 
 
 function StatusBadge(){
@@ -22,10 +31,9 @@ function StatusBadge(){
                 day: "numeric",
                 month: "short",
                 year: "numeric"
-            })}`: "You 're on the Free Plan • 3 requests included "}
-           
+            })}`: "You 're on the Free Plan • 3 requests included "}    
     </div>
-  )
+  );
 }
 
 function PlanCTA ({
@@ -59,20 +67,86 @@ function PlanCTA ({
 
  const [loading, setLoading] = useState(false);//payment k time kaam aayega
 
- const handleSubscribe = async () => {//iske undar razor pay vala method hoga
+ const handleSubscribe = async (price: any) => {//iske undar razor pay vala method hoga
 
-    if(!isAuth) {
-        navigate("/login");
-        return;
+   const token = localStorage.getItem("token")
+   setLoading(true);
+   let duration;
+
+   if(price === "₹299"){
+    duration = 1;
+   }else {
+    duration = 6;
+   }
+
+   const {data : {order}} = await axios.post(`${server}/api/payment/checkout`, 
+    {duration} , {
+    headers: {
+        Authorization: `Bearer ${token}`
     }
-    console.log("getting pro plan");
-    
- };
+   });
+
+   const options = {
+     key: "rzp_test_SvVuTSv6Tr8m6u", // Razorpay Dashboard से मिलेगा kya milega
+     amount: order.id,      // Amount in paise (50000 = ₹500)
+     currency: "INR",
+     name: "Career AI",
+     description: "Find Job easily",
+     
+     order_id: order.id,
+     handler: async function(response: any) {
+        const {razorpay_order_id, razorpay_payment_id, razorpay_signature } = response
+        try {
+            const {data} = await axios.post(`${server}/api/payment/verify`, {
+                razorpay_order_id,
+                razorpay_payment_id,
+                razorpay_signature,
+            },{
+                headers:{
+                    Authorization: `Bearer ${token}`,
+                }
+            }
+        );
+
+        toast.success(data.message);
+        setUser(data.updatedUser);
+        navigate("/account");
+        setLoading(false)
+        } catch (error: any) {
+            setLoading(false)
+            toast.error(error.response.data.message);
+        }
+    },
+    theme:{
+        color:"#F#7254",
+    },
+  };
+  const razorpay = new window.Razorpay(options)
+  razorpay.open();
+};
+ 
+
+//   prefill: {
+//     name: "Satyam Sharma",
+//     email: "satyam@example.com",
+//     contact: "9876543210",
+//   },
+
+//   theme: {
+//     color: "#3399cc",
+//   },
+// };
+
+// const rzp = new Razorpay(options);
+// rzp.open();
+//  };
+
+
 
  return <button className={`mt-auto text-center text-sm font-semibold py-3 
         rounded-xl transition-all duration-200 ${highlight? "btn-primary": 
         "bg-white/6 hover:bg-white/10 text-white"}`} 
-        onClick={handleSubscribe} 
+        onClick={()=> handleSubscribe(plan.price)} 
         disabled={loading}
         >{loading ? "Please Wait..." : plan.cta}
         </button>
@@ -92,7 +166,8 @@ const Pricing = () => {
                 Start free. Upgrade <span className="text-gradient">when ready.</span>
             </h2>
             <p className="text-white/40 mt-4 max-w-md mx-auto">
-            Your first 3 requests are completely free - no card needed.</p>
+            Your first 3 requests are completely free - no card needed.
+            </p>
             <div className="flex justify-center mt-6">
                 <StatusBadge/>
             </div>
@@ -152,6 +227,4 @@ const Pricing = () => {
 }
 
 export default Pricing
-
-
 
