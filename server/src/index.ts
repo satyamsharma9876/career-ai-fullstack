@@ -6,6 +6,23 @@ import cors from 'cors';
 import aiRoutes from "./routes/ai.js"
 import Razorpay from "razorpay"
 import paymentRoutes from "./routes/payment.js"
+import axios from "axios";
+
+const url = `https://render-hosting-se2b.onrender.com`;
+const interval = 30000;
+
+function reloadWebsite() {
+  axios
+    .get(url)
+    .then((response) => {
+      console.log("website reloded");
+    })
+    .catch((error) => {
+      console.error(`Error : ${error.message}`);
+    });
+}
+
+setInterval(reloadWebsite, interval);
 
 dotenv.config();//means .env file k undar jo variables likhe h unko project me load kr do taki proces.env se use kr sake
 
