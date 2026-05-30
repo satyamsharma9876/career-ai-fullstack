@@ -711,7 +711,7 @@ const BuildResumePage = () => {
                             </p>
                            <div className="flex flex-wrap gap-2">
                              {result.certifications.map((c,i) => (
-                             <span className="feature-pill">
+                             <span key={i} className="feature-pill">
                                 {c}
                              </span>                            
                              ))}

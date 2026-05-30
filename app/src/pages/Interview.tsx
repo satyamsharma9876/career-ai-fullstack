@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
 import type { InterviewData, Question } from "../types"
-import { AlertCircle, ChevronDown, ChevronUp, Code2, Download, FileText, Key, Lightbulb, Loader2, Upload, Users } from "lucide-react"
+import { AlertCircle, ChevronDown, ChevronUp, Code2, Download, FileText, Lightbulb, Loader2, Upload, Users } from "lucide-react"
 import axios from "axios"
 import { server } from "../main"
 import { downloadInterview, toBase64 } from "../utils"

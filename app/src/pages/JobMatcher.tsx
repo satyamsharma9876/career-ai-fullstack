@@ -4,7 +4,7 @@ import type { Job } from "../types";
 import { matchBg, toBase64, matchColor }from "../utils"
 import axios from "axios";
 import {server} from "../main"
-import { Briefcase, ChevronRight, Divide, FileText, Plus, X } from "lucide-react";
+import { Briefcase, ChevronRight, FileText, Plus, X } from "lucide-react";
 import { Upload } from "lucide-react";
 import { AlertCircle, Loader2 } from "lucide-react";
 
